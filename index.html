@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Command Center</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Command Center">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#F4EEDD">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#12151A">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700;800&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg1:#F4EEDD; --bg2:#EAE1C6; --panel:#FFFFFFcc; --panel2:#F3EDDB; --border:#DDD2AF;
+  --text:#262417; --muted:#726C58; --gold:#A9762B; --gold-ink:#FFFFFF; --teal:#3E7F72;
+  --rust:#B0552E; --good:#3E7F5A; --pending:#9C7A1E; --shadow:0 6px 18px -8px rgba(60,50,20,.25);
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg1:#12151A; --bg2:#1B2027; --panel:#1B2027dd; --panel2:#20262E; --border:#333B45;
+  --text:#ECE7D8; --muted:#8C93A0; --gold:#D8AE3F; --gold-ink:#161200; --teal:#5FB3A1;
+  --rust:#D07C58; --good:#6FCB93; --pending:#E4C766; --shadow:0 8px 22px -10px rgba(0,0,0,.6);
+}}
+:root[data-theme="dark"]{
+  --bg1:#12151A; --bg2:#1B2027; --panel:#1B2027dd; --panel2:#20262E; --border:#333B45;
+  --text:#ECE7D8; --muted:#8C93A0; --gold:#D8AE3F; --gold-ink:#161200; --teal:#5FB3A1;
+  --rust:#D07C58; --good:#6FCB93; --pending:#E4C766; --shadow:0 8px 22px -10px rgba(0,0,0,.6);
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px);}
+*{box-sizing:border-box;}
+body{margin:0;background:radial-gradient(1200px 500px at 50% -10%,var(--bg2),var(--bg1) 60%);color:var(--text);font-family:'IBM Plex Sans',sans-serif;padding-bottom:82px;min-height:100vh;}
+h1,h2,.stat{font-family:'Barlow Semi Condensed',sans-serif;}
+header{padding:16px 16px 8px;}
+.hdr-top{display:flex;justify-content:space-between;align-items:flex-start;}
+.kicker{color:var(--muted);font-size:12.5px;margin:0 0 1px;}
+h1{margin:0;font-size:27px;font-weight:800;letter-spacing:.2px;background:linear-gradient(90deg,var(--gold),var(--teal));-webkit-background-clip:text;background-clip:text;color:transparent;}
+.switchbtn{background:var(--panel2);border:1px solid var(--border);color:var(--text);border-radius:99px;padding:7px 12px;font-size:13px;font-weight:600;white-space:nowrap;}
+main{padding:6px 14px 20px;max-width:640px;margin:0 auto;}
+.tabpane{animation:fadein .28s ease;}
+@keyframes fadein{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+.card{background:var(--panel);backdrop-filter:blur(6px);border:1px solid var(--border);border-radius:14px;padding:15px;margin-bottom:12px;box-shadow:var(--shadow);}
+.row{display:flex;gap:8px;align-items:center;}
+.row.wrap{flex-wrap:wrap;}
+.spread{display:flex;justify-content:space-between;align-items:center;gap:8px;}
+label{font-size:12.5px;color:var(--muted);display:block;margin:8px 0 4px;}
+input,select,textarea{width:100%;background:var(--panel2);border:1px solid var(--border);color:var(--text);border-radius:9px;padding:9px 10px;font-family:inherit;font-size:15px;}
+textarea{min-height:78px;resize:vertical;}
+button{font-family:inherit;cursor:pointer;border-radius:9px;border:1px solid var(--border);background:var(--panel2);color:var(--text);padding:9px 12px;font-size:14px;transition:transform .08s ease;}
+button:active{transform:scale(.96);}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--gold);outline-offset:1px;}
+.btn-primary{background:linear-gradient(90deg,var(--gold),#c98f3d);color:var(--gold-ink);border-color:transparent;font-weight:700;}
+.btn-ghost{background:transparent;border-color:transparent;color:var(--rust);padding:6px 8px;font-size:13px;}
+.stat{font-size:32px;font-weight:800;line-height:1;}
+.stat-label{color:var(--muted);font-size:12px;margin-top:2px;}
+.pill{padding:6px 12px;border-radius:99px;font-size:13px;}
+.pill.on{background:linear-gradient(90deg,var(--gold),#c98f3d);color:var(--gold-ink);border-color:transparent;font-weight:700;}
+.entry{border-top:1px solid var(--border);padding:9px 0;}
+.entry:first-child{border-top:none;}
+.badge{font-size:12px;padding:2px 9px;border-radius:99px;border:1px solid var(--border);white-space:nowrap;}
+.badge.achieved{color:var(--good);border-color:var(--good);}
+.badge.missed{color:var(--rust);border-color:var(--rust);}
+.badge.pending{color:var(--pending);border-color:var(--pending);}
+.bars{display:flex;align-items:flex-end;gap:6px;height:64px;margin-top:10px;}
+.bars .b{flex:1;background:linear-gradient(180deg,var(--teal),var(--gold));border-radius:4px 4px 0 0;min-height:2px;}
+.barwrap{display:flex;flex-direction:column;flex:1;}
+.bl{font-size:10.5px;color:var(--muted);text-align:center;margin-top:4px;}
+.empty{color:var(--muted);font-size:14px;padding:6px 0;}
+nav.tabbar{position:fixed;left:0;right:0;bottom:0;display:flex;background:var(--panel);backdrop-filter:blur(10px);border-top:1px solid var(--border);padding:6px 2px calc(6px + env(safe-area-inset-bottom,0px));}
+nav.tabbar button{flex:1;background:transparent;border:none;color:var(--muted);font-size:10px;padding:6px 1px;border-radius:10px;line-height:1.5;}
+nav.tabbar button .ic{font-size:17px;display:block;}
+nav.tabbar button.active{color:var(--gold);font-weight:700;background:var(--panel2);}
+.subtabs{display:flex;gap:6px;margin-bottom:10px;overflow-x:auto;}
+.subtabs button{white-space:nowrap;}
+h2{font-size:18.5px;margin:2px 0 12px;}
+.day-name{font-size:13px;color:var(--muted);margin-bottom:3px;font-weight:600;}
+.avatar{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--teal));color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;flex-shrink:0;}
+</style>
+</head>
+<body>
+<header>
+  <div class="hdr-top">
+    <div>
+      <p class="kicker" id="dateLine"></p>
+      <h1>Command Center</h1>
+    </div>
+    <button class="switchbtn" id="switchBtn" onclick="TAB='settings';render();"></button>
+  </div>
+</header>
+<main id="app"></main>
+<nav class="tabbar" id="tabbar"></nav>
+<script>
+const J=[{id:'iitm',name:'IIT Madras BS'},{id:'upsc',name:'UPSC'},{id:'cds',name:'CDS'},{id:'afcat',name:'AFCAT'},{id:'cat',name:'CAT'},{id:'chsl',name:'SSC CHSL'}];
+function uid(){return Math.random().toString(36).slice(2,9);}
+function today(){return new Date().toISOString().slice(0,10);}
+function fmtDate(s){const d=new Date(s+'T00:00:00');return d.toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short'});}
+
+function defProfileData(){return {logs:{},timetables:{general:['','','','','','',''],daily:['','','','','','',''],rudra:['','','','','','','']},notes:{},goals:[],timer:null};}
+function defSubjects(){return ['Principles of Economics','Business Statistics','Management Thought and Practice','Financial Accounting'];}
+function defDB(){return {profiles:[{id:'p1',name:'You'}],activeProfileId:'p1',subjects:defSubjects(),data:{p1:defProfileData()}};}
+function migrateOld(){
+  try{
+    const old=JSON.parse(localStorage.getItem('occ_state_v1'));
+    if(old&&old.logs){
+      return {profiles:[{id:'p1',name:'You'}],activeProfileId:'p1',
+        subjects:(old.subjects&&old.subjects.length)?old.subjects:defSubjects(),
+        data:{p1:{logs:old.logs||{},timetables:old.timetables||defProfileData().timetables,notes:old.notes||{},goals:old.goals||[],timer:old.timer||null}}};
+    }
+  }catch(e){}
+  return null;
+}
+function loadDB(){try{const s=JSON.parse(localStorage.getItem('occ_state_v2'));if(s&&s.profiles)return s;}catch(e){}return migrateOld()||defDB();}
+let DB=loadDB();
+function saveDB(){try{localStorage.setItem('occ_state_v2',JSON.stringify(DB));}catch(e){}}
+function D(){if(!DB.data[DB.activeProfileId])DB.data[DB.activeProfileId]=defProfileData();return DB.data[DB.activeProfileId];}
+function activeProfile(){return DB.profiles.find(p=>p.id===DB.activeProfileId)||DB.profiles[0];}
+function jName(id){const j=J.find(x=>x.id===id);return j?j.name:id;}
+function entryLine(e){return `${jName(e.journeyId)}${e.subject?' · '+e.subject:''}${e.note?' — '+e.note:''}`;}
+function rememberSubject(s){if(s&&!DB.subjects.includes(s)){DB.subjects.push(s);}}
+function dayEntries(d){return D().logs[d]||[];}
+function dayTotal(d){return dayEntries(d).reduce((a,e)=>a+Number(e.hours),0);}
+function allTimeTotal(){return Object.keys(D().logs).reduce((a,d)=>a+dayTotal(d),0);}
+function weekTotal(){const now=new Date();let t=0;for(let i=0;i<7;i++){const d=new Date(now);d.setDate(now.getDate()-i);t+=dayTotal(d.toISOString().slice(0,10));}return t;}
+function currentStreak(){let d=new Date();if(dayTotal(d.toISOString().slice(0,10))<=0){d.setDate(d.getDate()-1);}let n=0;while(dayTotal(d.toISOString().slice(0,10))>0){n++;d.setDate(d.getDate()-1);}return n;}
+function journeyHours(id){return Object.keys(D().logs).reduce((a,d)=>a+dayEntries(d).filter(e=>e.journeyId===id).reduce((x,e)=>x+Number(e.hours),0),0);}
+
+let TAB='today', TT='general';
+const TABS=[['today','🎯','Today'],['log','📊','Log'],['timetable','🗓️','Timetable'],['journeys','🧭','Journeys'],['goals','🏁','Goals'],['settings','⚙️','Settings']];
+function setTab(t){TAB=t;render();}
+function renderNav(){document.getElementById('tabbar').innerHTML=TABS.map(([id,ic,l])=>`<button class="${TAB===id?'active':''}" onclick="setTab('${id}')"><span class="ic">${ic}</span>${l}</button>`).join('');}
+
+function addLog(){
+  const j=document.getElementById('inJourney').value;
+  const subj=document.getElementById('inSubject').value.trim();
+  const h=document.getElementById('inHours').value;
+  const n=document.getElementById('inNote').value;
+  if(!h||Number(h)<=0)return;
+  const d=today();
+  if(!D().logs[d])D().logs[d]=[];
+  D().logs[d].push({id:uid(),journeyId:j,subject:subj,hours:Number(h),note:n});
+  rememberSubject(subj);
+  saveDB();render();
+}
+function delLog(d,id){D().logs[d]=D().logs[d].filter(e=>e.id!==id);if(!D().logs[d].length)delete D().logs[d];saveDB();render();}
+function startTimer(){const j=document.getElementById('timerJourney').value;D().timer={journeyId:j,startTs:Date.now(),subject:'',note:''};saveDB();render();}
+function timerNoteInput(v){if(D().timer){D().timer.note=v;saveDB();}}
+function timerSubjectInput(v){if(D().timer){D().timer.subject=v;saveDB();}}
+function stopTimer(){
+  const tm=D().timer; if(!tm)return;
+  const secs=(Date.now()-tm.startTs)/1000;
+  const hours=Math.max(0.05,Math.round((secs/3600)*20)/20);
+  const d=today();
+  if(!D().logs[d])D().logs[d]=[];
+  D().logs[d].push({id:uid(),journeyId:tm.journeyId,subject:tm.subject||'',hours,note:tm.note||''});
+  rememberSubject(tm.subject||'');
+  D().timer=null;saveDB();render();
+}
+function timerDisplay(){
+  const tm=D().timer; if(!tm)return '00:00:00';
+  const secs=Math.floor((Date.now()-tm.startTs)/1000);
+  const h=String(Math.floor(secs/3600)).padStart(2,'0'),m=String(Math.floor((secs%3600)/60)).padStart(2,'0'),s=String(secs%60).padStart(2,'0');
+  return `${h}:${m}:${s}`;
+}
+function todayIndex(){return (new Date().getDay()+6)%7;}
+function renderTodaysPlan(){
+  const idx=todayIndex();
+  const views=[['general','General'],['daily','Daily study'],['rudra','Operation Rudra']];
+  const items=views.map(([id,l])=>({l,text:(D().timetables[id][idx]||'').trim()})).filter(v=>v.text);
+  if(!items.length)return `<div class="card"><h2>📋 Today's plan</h2><p class="empty">Nothing planned for today yet — add it on the Timetable tab.</p></div>`;
+  return `<div class="card"><h2>📋 Today's plan</h2>${items.map(v=>`<div style="margin-bottom:10px;"><div class="day-name">${v.l}</div><div style="white-space:pre-wrap;font-size:14.5px;">${v.text.replace(/</g,'&lt;')}</div></div>`).join('')}</div>`;
+}
+function quickAdd(hours){
+  const j=document.getElementById('inJourney').value;
+  const d=today();
+  if(!D().logs[d])D().logs[d]=[];
+  D().logs[d].push({id:uid(),journeyId:j,subject:'',hours,note:''});
+  saveDB();render();
+}
+
+function renderToday(){
+  const d=today(); const entries=dayEntries(d); const tm=D().timer;
+  return `
+  <div class="card row wrap" style="justify-content:space-around;text-align:center;">
+    <div><div class="stat">${dayTotal(d).toFixed(1)}</div><div class="stat-label">Today (hrs)</div></div>
+    <div><div class="stat">${weekTotal().toFixed(1)}</div><div class="stat-label">Last 7 days</div></div>
+    <div><div class="stat">${allTimeTotal().toFixed(1)}</div><div class="stat-label">Total logged</div></div>
+    <div><div class="stat">${currentStreak()}</div><div class="stat-label">Day streak</div></div>
+  </div>
+  ${renderTodaysPlan()}
+  <div class="card">
+    <h2>⏱️ Study timer</h2>
+    ${tm?`
+    <p class="stat-label" style="margin:0;">${jName(tm.journeyId)}</p>
+    <div class="stat" id="timerClock">${timerDisplay()}</div>
+    <label>Subject</label>
+    <input type="text" list="subjectList" value="${(tm.subject||'').replace(/"/g,'&quot;')}" oninput="timerSubjectInput(this.value)">
+    <label>What are you working on</label>
+    <input type="text" value="${(tm.note||'').replace(/"/g,'&quot;')}" oninput="timerNoteInput(this.value)">
+    <div style="margin-top:10px;"><button class="btn-primary" onclick="stopTimer()">Stop &amp; log</button></div>
+    `:`
+    <select id="timerJourney">${J.map(j=>`<option value="${j.id}">${j.name}</option>`).join('')}</select>
+    <div style="margin-top:10px;"><button class="btn-primary" onclick="startTimer()">Start</button></div>
+    `}
+  </div>
+  <div class="card">
+    <h2>✍️ Log study time</h2>
+    <label>Journey</label>
+    <select id="inJourney">${J.map(j=>`<option value="${j.id}">${j.name}</option>`).join('')}</select>
+    <div class="row wrap" style="margin-top:8px;">
+      <button class="pill" onclick="quickAdd(0.25)">+15m</button>
+      <button class="pill" onclick="quickAdd(0.5)">+30m</button>
+      <button class="pill" onclick="quickAdd(1)">+1h</button>
+    </div>
+    <label>Subject</label>
+    <input id="inSubject" type="text" list="subjectList" placeholder="e.g. Business Statistics">
+    <datalist id="subjectList">${DB.subjects.map(s=>`<option value="${s.replace(/"/g,'&quot;')}">`).join('')}</datalist>
+    <label>Hours</label>
+    <input id="inHours" type="number" step="0.25" min="0" placeholder="e.g. 1.5">
+    <label>What did you work on</label>
+    <input id="inNote" type="text" placeholder="e.g. Business Statistics week 9">
+    <div style="margin-top:12px;"><button class="btn-primary" onclick="addLog()">Add entry</button></div>
+  </div>
+  <div class="card">
+    <h2>Today's entries</h2>
+    ${entries.length?entries.map(e=>`<div class="entry spread"><div>${entryLine(e)} — ${e.hours}h</div><button class="btn-ghost" onclick="delLog('${d}','${e.id}')">Remove</button></div>`).join(''):'<p class="empty">Nothing logged yet today.</p>'}
+  </div>`;
+}
+
+function renderLog(){
+  const dates=Object.keys(D().logs).sort().reverse();
+  const last7=[...Array(7)].map((_,i)=>{const dt=new Date();dt.setDate(dt.getDate()-(6-i));return dt.toISOString().slice(0,10);});
+  const max=Math.max(1,...last7.map(dayTotal));
+  return `
+  <div class="card">
+    <h2>📊 Last 7 days</h2>
+    <div class="bars">${last7.map(d=>`<div class="barwrap"><div class="b" style="height:${Math.max(3,dayTotal(d)/max*64)}px" title="${dayTotal(d).toFixed(1)}h"></div><div class="bl">${fmtDate(d).slice(0,3)}</div></div>`).join('')}</div>
+  </div>
+  <div class="card">
+    <h2>🧭 Hours by journey</h2>
+    ${renderJourneyBars()}
+  </div>
+  <div class="card">
+    <h2>History</h2>
+    ${dates.length?dates.map(d=>`<div class="entry"><div class="spread"><strong>${fmtDate(d)}</strong><span>${dayTotal(d).toFixed(1)}h</span></div>${dayEntries(d).map(e=>`<div class="spread" style="margin-top:4px;font-size:14px;color:var(--muted);"><span>${entryLine(e)}</span><span>${e.hours}h</span></div>`).join('')}</div>`).join(''):'<p class="empty">No history yet — log your first day on the Today tab.</p>'}
+  </div>
+  <div class="card">
+    <h2>💾 Backup</h2>
+    <div class="row wrap">
+      <button onclick="exportData()">Export all data</button>
+      <button onclick="document.getElementById('importFile').click()">Import data</button>
+      <input type="file" id="importFile" accept="application/json,.json" style="display:none" onchange="importData(this.files[0])">
+    </div>
+    <div id="exportFallback"></div>
+  </div>`;
+}
+function renderJourneyBars(){
+  const totals=J.map(j=>({name:j.name,h:journeyHours(j.id)}));
+  const max=Math.max(1,...totals.map(t=>t.h));
+  return totals.map(t=>`<div style="margin:8px 0;"><div class="spread" style="font-size:13.5px;"><span>${t.name}</span><span>${t.h.toFixed(1)}h</span></div><div style="background:var(--panel2);border-radius:4px;height:8px;overflow:hidden;margin-top:3px;"><div style="width:${(t.h/max*100).toFixed(0)}%;height:100%;background:linear-gradient(90deg,var(--teal),var(--gold));"></div></div></div>`).join('');
+}
+
+let downloadsNS=null;
+(async()=>{try{if(window.claude&&window.claude.use){downloadsNS=await window.claude.use('downloads');}}catch(e){}})();
+async function exportData(){
+  const data=JSON.stringify(DB,null,2);
+  if(downloadsNS){try{await downloadsNS.save({filename:'command-center-backup.json',data});return;}catch(e){if(e&&e.code==='declined')return;}}
+  const box=document.getElementById('exportFallback');
+  if(box)box.innerHTML='<label>Download isn\'t available here — copy this and save it somewhere safe</label><textarea readonly onclick="this.select()">'+data.replace(/</g,'&lt;')+'</textarea>';
+}
+function importData(file){
+  if(!file)return;
+  const r=new FileReader();
+  r.onload=()=>{
+    try{
+      const parsed=JSON.parse(r.result);
+      if(!parsed||!parsed.profiles||!parsed.data)throw 0;
+      if(!confirm('This replaces ALL profiles and data with the backup. Continue?'))return;
+      DB=parsed; saveDB(); render();
+    }catch(e){alert('That file could not be read as a backup.');}
+  };
+  r.readAsText(file);
+}
+
+function saveTT(idx,val){D().timetables[TT][idx]=val;saveDB();}
+function setTTView(v){TT=v;render();}
+function renderTimetable(){
+  const days=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+  const views=[['general','General'],['daily','Daily study'],['rudra','Operation Rudra']];
+  return `
+  <div class="subtabs">${views.map(([id,l])=>`<button class="pill ${TT===id?'on':''}" onclick="setTTView('${id}')">${l}</button>`).join('')}</div>
+  <div class="card">
+    ${days.map((dn,i)=>`<div style="margin-bottom:10px;"><div class="day-name">${dn}</div><textarea oninput="saveTT(${i},this.value)" placeholder="Time blocks and tasks for ${dn}">${D().timetables[TT][i]||''}</textarea></div>`).join('')}
+  </div>`;
+}
+
+function saveNote(id,val){D().notes[id]=val;saveDB();}
+function renderJourneys(){
+  return J.map(j=>`
+  <div class="card">
+    <div class="spread"><h2 style="margin:0;">${j.name}</h2><span class="stat" style="font-size:22px;">${journeyHours(j.id).toFixed(1)}h</span></div>
+    <label>Notes / current target</label>
+    <textarea oninput="saveNote('${j.id}',this.value)" placeholder="Target date, current focus, blockers...">${D().notes[j.id]||''}</textarea>
+    <p class="stat-label" style="margin-top:8px;">${D().goals.filter(g=>g.journeyId===j.id).length} goal(s) tracked</p>
+  </div>`).join('');
+}
+
+function addGoal(){
+  const t=document.getElementById('gTitle').value.trim(); if(!t)return;
+  const j=document.getElementById('gJourney').value;
+  const dt=document.getElementById('gDate').value;
+  D().goals.push({id:uid(),title:t,journeyId:j,target:dt,status:'pending'});
+  document.getElementById('gTitle').value='';
+  saveDB();render();
+}
+function cycleGoal(id){const g=D().goals.find(x=>x.id===id);g.status=g.status==='pending'?'achieved':g.status==='achieved'?'missed':'pending';saveDB();render();}
+function delGoal(id){D().goals=D().goals.filter(g=>g.id!==id);saveDB();render();}
+function renderGoals(){
+  const sorted=[...D().goals].sort((a,b)=>(a.target||'9999').localeCompare(b.target||'9999'));
+  return `
+  <div class="card">
+    <h2>New goal</h2>
+    <label>Goal</label>
+    <input id="gTitle" type="text" placeholder="e.g. Finish CDS English mocks">
+    <label>Journey</label>
+    <select id="gJourney">${J.map(j=>`<option value="${j.id}">${j.name}</option>`).join('')}</select>
+    <label>Target date</label>
+    <input id="gDate" type="date">
+    <div style="margin-top:12px;"><button class="btn-primary" onclick="addGoal()">Add goal</button></div>
+  </div>
+  <div class="card">
+    <h2>All goals</h2>
+    ${sorted.length?sorted.map(g=>`<div class="entry spread"><div><strong>${g.title}</strong><br><span class="stat-label">${jName(g.journeyId)}${g.target?' · '+fmtDate(g.target):''}</span></div><div class="row"><button class="badge ${g.status}" onclick="cycleGoal('${g.id}')">${g.status}</button><button class="btn-ghost" onclick="delGoal('${g.id}')">✕</button></div></div>`).join(''):'<p class="empty">No goals yet.</p>'}
+  </div>`;
+}
+
+function renameProfile(id,val){const p=DB.profiles.find(x=>x.id===id);if(p)p.name=val;saveDB();}
+function switchProfile(id){DB.activeProfileId=id;TAB='today';saveDB();render();}
+function addProfile(){if(DB.profiles.length>=3)return;const id=uid();DB.profiles.push({id,name:'New person'});DB.data[id]=defProfileData();saveDB();render();}
+function removeProfile(id){if(DB.profiles.length<=1)return;if(!confirm('Remove this profile and its data? This cannot be undone.'))return;DB.profiles=DB.profiles.filter(p=>p.id!==id);delete DB.data[id];if(DB.activeProfileId===id)DB.activeProfileId=DB.profiles[0].id;saveDB();render();}
+function addSubjectManual(){const v=document.getElementById('newSubject').value.trim();if(!v)return;rememberSubject(v);document.getElementById('newSubject').value='';saveDB();render();}
+function removeSubject(s){DB.subjects=DB.subjects.filter(x=>x!==s);saveDB();render();}
+function renderSettings(){
+  return `
+  <div class="card">
+    <h2>👥 Who's using this app</h2>
+    <p class="stat-label" style="margin-top:-6px;">Up to 3 people, each with their own private logs, timetable and goals on this device.</p>
+    ${DB.profiles.map(p=>`
+      <div class="entry spread">
+        <div class="row" style="flex:1;">
+          <div class="avatar">${(p.name||'?').trim().charAt(0).toUpperCase()}</div>
+          <input type="text" value="${p.name.replace(/"/g,'&quot;')}" oninput="renameProfile('${p.id}',this.value)">
+        </div>
+        <div class="row">
+          ${p.id!==DB.activeProfileId?`<button class="pill" onclick="switchProfile('${p.id}')">Switch</button>`:'<span class="badge achieved">Active</span>'}
+          ${DB.profiles.length>1?`<button class="btn-ghost" onclick="removeProfile('${p.id}')">✕</button>`:''}
+        </div>
+      </div>`).join('')}
+    ${DB.profiles.length<3?`<div style="margin-top:10px;"><button onclick="addProfile()">+ Add person</button></div>`:'<p class="stat-label" style="margin-top:8px;">Maximum of 3 profiles reached.</p>'}
+  </div>
+  <div class="card">
+    <h2>📚 Subjects</h2>
+    <p class="stat-label" style="margin-top:-6px;">Shown as suggestions when logging time or starting the timer.</p>
+    ${DB.subjects.map(s=>`<div class="entry spread"><span>${s}</span><button class="btn-ghost" onclick="removeSubject('${s.replace(/'/g,"\\'")}')">✕</button></div>`).join('')}
+    <div class="row" style="margin-top:10px;"><input id="newSubject" type="text" placeholder="Add a subject"><button class="btn-primary" onclick="addSubjectManual()">Add</button></div>
+  </div>`;
+}
+
+function render(){
+  document.getElementById('dateLine').textContent=fmtDate(today());
+  document.getElementById('switchBtn').innerHTML='👤 '+activeProfile().name+' <span style="opacity:.6;">▾</span>';
+  const map={today:renderToday,log:renderLog,timetable:renderTimetable,journeys:renderJourneys,goals:renderGoals,settings:renderSettings};
+  document.getElementById('app').innerHTML='<div class="tabpane">'+map[TAB]()+'</div>';
+  renderNav();
+}
+if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(()=>{});});}
+render();
+setInterval(()=>{if(D().timer){const el=document.getElementById('timerClock');if(el)el.textContent=timerDisplay();}},1000);
+</script>
+</body>
+</html>
